@@ -1,3 +1,10 @@
+'''
+COP4600 PA#1 Group 31
+Evelyn Adams
+Andrew Brink
+Alicia Hassan
+Jonah Henriksson
+'''
 import sys
 from collections import deque
 
