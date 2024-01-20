@@ -8,6 +8,12 @@ Jonah Henriksson
 import sys
 from collections import deque
 
+def calculate_metrics(processes):
+    for process in processes:
+        process['turnaround'] = process['finish'] - process['arrival']
+        process['wait'] = process['turnaround'] - process['burst']
+        process['response'] = process['wait']
+
 def fcfs(processes):
     time = 0
     print(f"{len(processes)} processes")
@@ -20,7 +26,11 @@ def fcfs(processes):
         process['wait'] = max(0, time - process['arrival'])
         process['has_run'] = True
         time += process['burst']
+        process['finish'] = time
         print(f"Time {time:3d} : {process['name']} finished")
+
+    # Calculate metrics after all processes have finished
+    calculate_metrics(processes)
 
 def sjf(processes):
     # TODO: Implement Shortest Job First scheduling algorithm
