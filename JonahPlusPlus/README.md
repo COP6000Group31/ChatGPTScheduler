@@ -1,6 +1,5 @@
 # Prompt
 
-```
 Write a Python script that demonstrates a scheduling algorithm by doing the following:
 Open up a file passed to it from the terminal.
 
@@ -75,4 +74,3 @@ Once the loop is finished, print that it is completed and "runfor".
 Return "finished_processes".
 
 Finally, print for each process the wait time, the turnaround time and the response time.
-```
