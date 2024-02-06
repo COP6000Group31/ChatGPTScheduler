@@ -1,6 +1,5 @@
 # Prompt
 
-```
 Write a Python script that demonstrates a scheduling algorithm by doing the following:
 Open up a file passed to it from the terminal.
 
@@ -44,35 +43,38 @@ C wait   1 turnaround   3 response 1
 ```
 
 Read each line in the file, ignoring any content that comes after a "#".
-Each line has a single directive, which will be parsed and stored into variables of the same name. The directives are and appear in this order:
-"processcount": a number; required
-"runfor": a number representing the number of time units; required
-"use": one of "fcfs", "sjf", or "rr" (First Come First Serve, Pre-emptive Shortest Job First, and Round Robin respectively); required
-"quantum": a number; not required
-"process": has the parameters "name" (a string that is the name of the process), "arrival" (a number that is the time at which the process arrives), "burst" (a number that is the duration of the process)
-"end": stop reading the file
+Each line has a single directive, which will be parsed and the rest of the line (which can be an integer, a string or nothing) stored into a map under keys of the same name (except for the processes, which use a special format and will be stored in an array). The directives are and appear in this order:
+"processcount": an integer; required
+"runfor": an integer representing the number of time units; required
+"use": a string; one of "fcfs", "sjf", or "rr" (First Come First Serve, Pre-emptive Shortest Job First, and Round Robin respectively); required
+"quantum": an integer; not required
+"process": has the parameters "name" (a string that is the name of the process), "arrival" (a number that is the time at which the process arrives), "burst" (a number that is the duration of the process), which appear at indices 2, 4, and 6 of the line when split by spaces respectively.
+"end": nothing; stop reading the file
 If one of the required directives weren't given, or if the number of "process" directives didn't match the value of the "processcount" directive, print an error in the form "Error: Missing parameter <parameter>" and exit.
 If "use" is "rr" and "quantum" is not set, print "Error: Missing quantum parameter when use is 'rr'" and exit.
-Then, print "processes: " + "processcount".
-Next, for each process, give it properties for wait time, turnaround time and response time, as well as "has_run", which should be false.
-Finally, sort all processes by the arrival time, before calling the scheduling algorithm.
+Then, print "  " + variable "processcount" + " processes".
+Next, for each process, assign properties for wait time ("wait"), turnaround time ("turnaround") and response time ("response"), as well as "has_run", which should be false.
+Finally, sort all processes by the arrival time, before calling the scheduling algorithm with the processes and "runfor" (as well as any other things the algorithm may need).
 
 Leave implementations for "fcfs" and "sjf" as stubs.
 
 If "use" is "rr", demonstrate Round Robin scheduling.
-Print "Using Round-Robin"
-Set "active_process" and "current_q" to null and 0 respectively.
+Print "Using Round-Robin".
+Print "Quantum " + variable "quantum".
+Print blank line.
+Set "active_process" and "current_q" to null and 0 respectively and create an empty queue.
 Create an empty array called "finished_processes".
 Start a loop over "i" from 0 to "runfor" (exclusive).
 In this loop:
-When "i" is equal to the arrival time of the first of the processes, pop it and push it onto the queue, and print that the process has arrived. Do this until a process has an arrival time not equal to "i".
-When there is a process in the queue and no current active process, pop it and set it as the active process and set the "current_q" to "quantum" and set the process "has_run" to true; print that the process has been selected.
+If there is an active process, decrement the "burst" of the active process, decrement "current_q".
+Then, increment the wait time.
+Next, when "i" is equal to the arrival time of the first of the processes, pop it and push it onto the queue, and print that the process has arrived. Do this until a process has an arrival time not equal to "i".
+Next, if there is an active process and it's "burst" is 0, set the turnaround time as "i" - arrival time, add the process to "finished_processes", print that it completed and set the active process to None.
+When there is a process in the queue and no current active process, pop it and set it as the active process and set the "current_q" to "quantum"; if "has_run" is False, then set "response" to i - "arrival"; next, set the process "has_run" to true; print that the process has been selected.
 After, if there is no active process, print that the scheduler is "Idle" and continue.
-Decrement the "burst" of the active process, decrement "current_q" and increment the wait time and (if "has_run" is false) the response time of each process in the queue.
-If "burst" is 0, remove the process, set the turnaround time as "i" - arrival time, add the process to "finished_processes", and print that it completed.
-If "current_q" is 0, move the active process to the back of the queue and pick the next one.
+Next, if "current_q" is 0, move the active process to the back of the queue and pick the next one;  if "has_run" is False, then set "response" to i - "arrival"; next, set the process "has_run" to true; print that it was selected.
 Once the loop is finished, print that it is completed and "runfor".
 Return "finished_processes".
 
+Order the returned processes by name.
 Finally, print for each process the wait time, the turnaround time and the response time.
-```
