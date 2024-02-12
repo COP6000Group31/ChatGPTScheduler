@@ -17,11 +17,12 @@ def fcfs(processes, runfor):
         # Check for arriving processes
         while processes and processes[0]["arrival"] == i:
             process = processes.pop(0)
+            queue.append(process)
             print(f"Time {i:3} : {process['name']} arrived")
 
-            if queue and not active_process:
-                active_process = process
-                print(f"Time {i:3} : {active_process['name']} selected (burst {active_process['burst']})")
+        if queue and not active_process:
+            active_process = queue.popleft()
+            print(f"Time {i:3} : {active_process['name']} selected (burst {active_process['burst']})")
 
         # Check if the active process is finished
         if active_process and active_process["burst"] == 0:
