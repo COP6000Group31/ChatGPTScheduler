@@ -20,10 +20,6 @@ def fcfs(processes, runfor):
             queue.append(process)
             print(f"Time {i:3} : {process['name']} arrived")
 
-        if queue and not active_process:
-            active_process = queue.popleft()
-            print(f"Time {i:3} : {active_process['name']} selected (burst {active_process['burst']})")
-
         # Check if the active process is finished
         if active_process and active_process["burst"] == 0:
             active_process["turnaround"] = i - active_process["arrival"]
@@ -31,8 +27,12 @@ def fcfs(processes, runfor):
             print(f"Time {i:3} : {active_process['name']} finished")
             active_process = None
 
+        if queue and not active_process:
+            active_process = queue.popleft()
+            print(f"Time {i:3} : {active_process['name']} selected (burst {active_process['burst']})")
+
         # If no active process, print idle
-        if not active_process and not process:
+        if not active_process:
             print(f"Time {i:3} : Idle")
 
     print("Finished at time", runfor)
