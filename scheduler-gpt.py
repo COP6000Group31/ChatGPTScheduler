@@ -50,6 +50,50 @@ def fcfs(processes, runfor):
     print("Finished at time", runfor)
     return finished_processes
 
+# Alicia Hassan
+# def sjf(processes, runfor):
+#     print("Using preemptive Shortest Job First")
+#     process_queue = deque()
+#     finished_processes = []
+#     current_time = 0
+    
+#     for current_time in range(runfor):
+#         # Handle process arrivals
+#         while processes and processes[0]["arrival"] == current_time:
+#                 process = processes.pop(0)
+#                 process_queue.append(process)
+#                 print(f"Time {current_time:3d} : {process['name']} arrived")
+
+#         if not len(process_queue) == 0:
+#             shortest_process = min(process_queue, key=lambda x: x["burst"])
+            
+#             if not shortest_process["has_run"]:
+#                 shortest_process["response"] = current_time - shortest_process["arrival"]
+#                 shortest_process["has_run"] = True
+#                 print(f"Time {current_time:3d} : {shortest_process['name']} selected (burst {shortest_process['burst']})")
+
+#             current_time += 1
+#             shortest_process["burst"] -= 1
+#             shortest_process["wait"] += 1
+
+#             if shortest_process["burst"] == 0:
+#                 shortest_process["turnaround"] += current_time - shortest_process["arrival"]
+#                 finished_processes.append(shortest_process)
+#                 print(f"Time {current_time:3d} : {shortest_process['name']} finished")
+
+#                 process_queue.popleft()
+#         else:
+#             print(f"Time {current_time:3d} : Idle")
+#             current_time += 1
+
+#     print("Finished at time", current_time)
+#     print()
+#     finished_processes.sort(key=lambda x: x["name"])
+#     for process in finished_processes:
+#             print(f"{process['name']} wait {process['wait']} turnaround {process['turnaround']} response {process['response']}")
+#             if process["burst"] > 0:
+#                 print(f"{process['name']} did not finish")
+
 class Process:
     def __init__(self, name, arrival_time, burst_time):
         self.name = name
