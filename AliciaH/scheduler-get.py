@@ -8,28 +8,48 @@ Jonah Henriksson
 import sys
 from collections import deque
 
-class Process:
-    def __init__(self, process_name, arrival_time, burst_time):
-        self.process_name = process_name
-        self.arrival_time = arrival_time
-        self.burst_time = burst_time
-        self.remaining_time = burst_time
-        self.start_time = -1
-        self.end_time = -1
-        self.response_time = -1
+def sjf(processes, runfor):
+    print("Using preemptive Shortest Job First")
+    process_queue = deque()
+    finished_processes = []
+    current_time = 0
+    
+    for current_time in range(runfor):
+        # Handle process arrivals
+        while processes and processes[0]["arrival"] == current_time:
+                process = processes.pop(0)
+                process_queue.append(process)
+                print(f"Time {current_time:3d} : {process['name']} arrived")
 
-class ProcessQueue:
-    def __init__(self):
-        self.queue = deque()
+        if not len(process_queue) == 0:
+            shortest_process = min(process_queue, key=lambda x: x["burst"])
+            
+            if not shortest_process["has_run"]:
+                shortest_process["response"] = current_time - shortest_process["arrival"]
+                shortest_process["has_run"] = True
+                print(f"Time {current_time:3d} : {shortest_process['name']} selected (burst {shortest_process['burst']})")
 
-    def enqueue(self, process):
-        self.queue.append(process)
+            current_time += 1
+            shortest_process["burst"] -= 1
+            shortest_process["wait"] += 1
 
-    def dequeue(self):
-        return self.queue.popleft() if self.queue else None
+            if shortest_process["burst"] == 0:
+                shortest_process["turnaround"] += current_time - shortest_process["arrival"]
+                finished_processes.append(shortest_process)
+                print(f"Time {current_time:3d} : {shortest_process['name']} finished")
 
-    def is_empty(self):
-        return not bool(self.queue)
+                process_queue.popleft()
+        else:
+            print(f"Time {current_time:3d} : Idle")
+            current_time += 1
+
+    print("Finished at time", current_time)
+    print()
+    finished_processes.sort(key=lambda x: x["name"])
+    for process in finished_processes:
+            print(f"{process['name']} wait {process['wait']} turnaround {process['turnaround']} response {process['response']}")
+            if process["burst"] > 0:
+                print(f"{process['name']} did not finish")
 
 def calculate_metrics(processes):
     for process in processes:
@@ -54,44 +74,6 @@ def fcfs(processes):
 
     # Calculate metrics after all processes have finished
     calculate_metrics(processes)
-
-def sjf(processes):
-    process_queue = ProcessQueue()
-    current_time = 0
-    total_turnaround_time = 0
-    total_wait_time = 0
-
-    while processes or not process_queue.is_empty():
-        # Handle process arrivals
-        while processes and processes[0].arrival_time == current_time:
-            process_queue.enqueue(processes.pop(0))
-            print(f"Time {current_time:3d} : {process_queue.queue[-1].process_name} arrived")
-
-        if not process_queue.is_empty():
-            shortest_process = min(process_queue.queue, key=lambda x: x.remaining_time)
-
-            if shortest_process.start_time == -1:
-                shortest_process.start_time = current_time
-                shortest_process.response_time = current_time - shortest_process.arrival_time
-
-            current_time += 1
-            shortest_process.remaining_time -= 1
-
-            if shortest_process.remaining_time == 0:
-                shortest_process.end_time = current_time
-                total_turnaround_time += shortest_process.end_time - shortest_process.arrival_time
-                total_wait_time += shortest_process.start_time - shortest_process.arrival_time
-
-                process_queue.dequeue()
-        else:
-            current_time += 1
-
-    n = len(processes) + len(process_queue.queue)
-    average_turnaround_time = total_turnaround_time / n
-    average_wait_time = total_wait_time / n
-    
-    print("Average Turnaround Time:", average_turnaround_time)
-    print("Average Wait Time:", average_wait_time)
 
 def round_robin(processes, runfor, quantum):
     print("Using Round-Robin")
@@ -146,12 +128,12 @@ def round_robin(processes, runfor, quantum):
 
 def main():
     if len(sys.argv) != 2:
-        print("Usage: python scheduler.py <filename>")
+        print("Usage: python3 scheduler-get.py <filename>")
         sys.exit(1)
 
     filename = sys.argv[1]
 
-    with open(filename) as file:
+    with open("../tests/" + filename, 'r') as file:
         lines = file.readlines()
 
     directives = {}
