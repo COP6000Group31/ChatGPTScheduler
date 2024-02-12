@@ -56,7 +56,56 @@ def sjf(processes, runfor):
     # Your SJF implementation here
 
 def round_robin(processes, runfor, quantum):
-    pass
+    print("Using Round-Robin")
+    print("Quantum", quantum)
+    print()
+
+    active_process = None
+    current_q = 0
+    queue = deque()
+    finished_processes = []
+
+    for i in range(runfor):
+        if active_process:
+            active_process["burst"] -= 1
+            current_q -= 1
+            active_process["wait"] += 1
+
+        while processes and processes[0]["arrival"] == i:
+            process = processes.pop(0)
+            queue.append(process)
+            print(f"Time {i:3} : {process['name']} arrived")
+
+        if active_process and active_process["burst"] == 0:
+            active_process["turnaround"] = i - active_process["arrival"]
+            finished_processes.append(active_process)
+            print(f"Time {i:3} : {active_process['name']} finished")
+            active_process = None
+
+        if queue and not active_process:
+            active_process = queue.popleft()
+            current_q = quantum
+            if not active_process["has_run"]:
+                active_process["response"] = i - active_process["arrival"]
+                active_process["has_run"] = True
+            print(f"Time {i:3} : {active_process['name']} selected (burst {active_process['burst']})")
+
+        if not active_process:
+            print(f"Time {i:3} : Idle")
+            continue
+
+        if current_q == 0:
+            queue.append(active_process)
+            active_process = queue.popleft()
+            current_q = quantum
+            if not active_process["has_run"]:
+                active_process["response"] = i - active_process["arrival"]
+                active_process["has_run"] = True
+            print(f"Time {i:3} : {active_process['name']} selected (burst {active_process['burst']})")
+
+    print("Finished at time", runfor)
+    return finished_processes
+
 
 def main():
     if len(sys.argv) != 2:
