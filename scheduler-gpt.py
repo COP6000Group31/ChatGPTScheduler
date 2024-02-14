@@ -44,7 +44,7 @@ def read_input_file(file_path):
 def calculate_metrics(processes):
     for process in processes:
         process['turnaround'] = process['finish'] - process['arrival']
-        process['wait'] = process['arrival'] - process['first_exe_time']
+        process['wait'] = process['first_exe_time'] - process['arrival']
         process['response'] = process['first_exe_time'] - process['arrival']
         
 def fcfs(processes, runfor, input_file_path):
@@ -74,20 +74,19 @@ def fcfs(processes, runfor, input_file_path):
             if active_process and active_process["burst"] == 0:
                 active_process["finish"] = i
                 finished_processes.append(active_process)
-                output_file.write(f"Time {i:3} : {active_process['name']} finished'\n")
+                output_file.write(f"Time {i:3} : {active_process['name']} finished\n")
                 active_process = None
 
             if queue and not active_process:
                 active_process = queue.popleft()
                 active_process["first_exe_time"] = i
-                output_file.write(f"Time {i:3} : {active_process['name']} selected (burst {active_process['burst']})\n")
+                output_file.write(f"Time {i:3} : {active_process['name']} selected (burst   {active_process['burst']})\n")
                 
-
             # If no active process, print idle
             if not active_process:
                 output_file.write(f"Time {i:3} : Idle\n")
 
-        output_file.write(f"Finished at time {runfor}\n")
+        output_file.write(f"Finished at time  {runfor}\n")
         calculate_metrics(finished_processes)
 
         unfinished_processes = [process['name'] for process in processes]
@@ -96,8 +95,9 @@ def fcfs(processes, runfor, input_file_path):
             for name in unfinished_processes:
                 output_file.write(f"{name} did not finish\n")   
 
-        for process in finished_processes:
-            output_file.write(f"{process['name']} wait {process['wait']} turnarround {process['turnaround']} response {process['response']}\n")
+        output_file.write("\n")   
+        for process in sorted(finished_processes, key=lambda x: x['name']):
+            output_file.write(f"{process['name']} wait {process['wait']} turnaround {process['turnaround']} response {process['response']}\n")
 
     print(f"Output written to {output_file_path}")
     
@@ -221,6 +221,7 @@ def round_robin(processes, runfor, quantum):
                 active_process["has_run"] = True
             print(f"Time {i:3} : {active_process['name']} selected (burst {active_process['burst']})")
 
+        # If no active process, print idle
         if not active_process:
             print(f"Time {i:3} : Idle")
             continue
@@ -292,7 +293,7 @@ def main():
     processes.sort(key=lambda x: x["arrival"])
 
     if use_algorithm == "fcfs":
-        result = fcfs(processes, int(directives["runfor"]), filename)
+        fcfs(processes, int(directives["runfor"]), filename)
 
     elif use_algorithm == "sjf":
         sjf(filename)
