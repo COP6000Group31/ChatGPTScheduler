@@ -41,6 +41,10 @@ A wait   0 turnaround   5  response 0
 B wait   6 turnaround  10  response 6
 C wait   1 turnaround   3 response 1
 ```
+Store "<name>.out" to a global variable named "file_out", where <name> is from the input file "<name>.in".
+Clear the contents of the file "file_out".
+
+Create a function called "write_out", that appends a string to the file in "file_out".
 
 Read each line in the file, ignoring any content that comes after a "#".
 Each line has a single directive, which will be parsed and the rest of the line (which can be an integer, a string or nothing) stored into a map under keys of the same name (except for the processes, which use a special format and will be stored in an array). The directives are and appear in this order:
@@ -50,31 +54,31 @@ Each line has a single directive, which will be parsed and the rest of the line 
 "quantum": an integer; not required
 "process": has the parameters "name" (a string that is the name of the process), "arrival" (a number that is the time at which the process arrives), "burst" (a number that is the duration of the process), which appear at indices 2, 4, and 6 of the line when split by spaces respectively.
 "end": nothing; stop reading the file
-If one of the required directives weren't given, or if the number of "process" directives didn't match the value of the "processcount" directive, print an error in the form "Error: Missing parameter <parameter>" and exit.
-If "use" is "rr" and "quantum" is not set, print "Error: Missing quantum parameter when use is 'rr'" and exit.
-Then, print "  " + variable "processcount" + " processes".
+If one of the required directives weren't given, or if the number of "process" directives didn't match the value of the "processcount" directive, call "write_out" with an error in the form "Error: Missing parameter <parameter>" and exit.
+If "use" is "rr" and "quantum" is not set, pass to "write_out": "Error: Missing quantum parameter when use is 'rr'" and exit.
+Then, pass to "write_out":  "  " + variable "processcount" + " processes".
 Next, for each process, assign properties for wait time ("wait"), turnaround time ("turnaround") and response time ("response"), as well as "has_run", which should be false.
 Finally, sort all processes by the arrival time, before calling the scheduling algorithm with the processes and "runfor" (as well as any other things the algorithm may need).
 
 Leave implementations for "fcfs" and "sjf" as stubs.
 
 If "use" is "rr", demonstrate Round Robin scheduling.
-Print "Using Round-Robin".
-Print "Quantum " + variable "quantum".
-Print blank line.
+Pass to "write_out": "Using Round-Robin".
+Pass to "write_out": "Quantum " + variable "quantum".
+Pass to "write_out": a blank line.
 Set "active_process" and "current_q" to null and 0 respectively and create an empty queue.
 Create an empty array called "finished_processes".
 Start a loop over "i" from 0 to "runfor" (exclusive).
 In this loop:
 If there is an active process, decrement the "burst" of the active process, decrement "current_q".
-Then, increment the wait time.
-Next, when "i" is equal to the arrival time of the first of the processes, pop it and push it onto the queue, and print that the process has arrived. Do this until a process has an arrival time not equal to "i".
-Next, if there is an active process and it's "burst" is 0, set the turnaround time as "i" - arrival time, add the process to "finished_processes", print that it completed and set the active process to None.
-When there is a process in the queue and no current active process, pop it and set it as the active process and set the "current_q" to "quantum"; if "has_run" is False, then set "response" to i - "arrival"; next, set the process "has_run" to true; print that the process has been selected.
-After, if there is no active process, print that the scheduler is "Idle" and continue.
-Next, if "current_q" is 0, move the active process to the back of the queue and pick the next one;  if "has_run" is False, then set "response" to i - "arrival"; next, set the process "has_run" to true; print that it was selected.
-Once the loop is finished, print that it is completed and "runfor".
+Then, increment the wait time of each of the processes in the queue.
+Next, when "i" is equal to the arrival time of the first of the processes, pop it and push it onto the queue, and call "write_out" with that the process has arrived. Do this until a process has an arrival time not equal to "i".
+Next, if there is an active process and it's "burst" is 0, set the turnaround time as "i" - arrival time, add the process to "finished_processes", call "write_out" with that it completed and set the active process to None.
+When there is a process in the queue and no current active process, pop it and set it as the active process and set the "current_q" to "quantum"; if "has_run" is False, then set "response" to i - "arrival"; next, set the process "has_run" to true; call "write_out" with that the process has been selected.
+After, if there is no active process, call "write_out" with that the scheduler is "Idle" and continue.
+Next, if "current_q" is 0, move the active process to the back of the queue and pick the next one;  if "has_run" is False, then set "response" to i - "arrival"; next, set the process "has_run" to true; call "write_out" with that "<name>.out" was selected.
+Once the loop is finished, call "write_out" with that it is completed and "runfor".
 Return "finished_processes".
 
 Order the returned processes by name.
-Finally, print for each process the wait time, the turnaround time and the response time.
+Finally, call "write_out" for each process the wait time, the turnaround time and the response time.
