@@ -41,6 +41,12 @@ def read_input_file(file_path):
 
         return processes, run_time
 
+file_out = ""
+
+def write_out(string):
+    global file_out
+    file_out += string + '\n'
+
 def calculate_metrics(processes):
     for process in processes:
         process['turnaround'] = process['finish'] - process['arrival']
@@ -271,58 +277,63 @@ def ljf(input_file_path):
     print(f"Output written to {output_file_path}")
 
 def round_robin(processes, runfor, quantum):
-    print("Using Round-Robin")
-    print("Quantum", quantum)
-    print()
+    write_out(f" {len(processes)} processes") # moved here and inserted space to be consistent with output
+    write_out("Using Round-Robin")
+    write_out(f"Quantum {quantum:>3}") # the formatting (:>3) has been added to this and all following write calls, to match the original formatting
+    write_out("")  # Blank line
 
     active_process = None
     current_q = 0
-    queue = deque()
+    queue = []
     finished_processes = []
 
     for i in range(runfor):
         if active_process:
-            active_process["burst"] -= 1
+            active_process['burst'] -= 1
             current_q -= 1
-            active_process["wait"] += 1
 
-        while processes and processes[0]["arrival"] == i:
-            process = processes.pop(0)
-            queue.append(process)
-            print(f"Time {i:3} : {process['name']} arrived")
+        for process in queue:
+            process['wait'] += 1
 
-        if active_process and active_process["burst"] == 0:
-            active_process["turnaround"] = i - active_process["arrival"]
+        arrivals = [process for process in processes if process['arrival'] == i]
+        for arrival in arrivals:
+            queue.append(arrival)
+            write_out(f"Time {i:>3} : {arrival['name']} arrived")
+
+        if active_process and active_process['burst'] == 0:
+            active_process['turnaround'] = i - active_process['arrival']
             finished_processes.append(active_process)
-            print(f"Time {i:3} : {active_process['name']} finished")
+            write_out(f"Time {i:>3} : {active_process['name']} finished")
             active_process = None
 
-        if queue and not active_process:
-            active_process = queue.popleft()
+        if not active_process and queue:
+            active_process = queue.pop(0)
             current_q = quantum
-            if not active_process["has_run"]:
-                active_process["response"] = i - active_process["arrival"]
-                active_process["has_run"] = True
-            print(f"Time {i:3} : {active_process['name']} selected (burst {active_process['burst']})")
+            if not active_process['has_run']:
+                active_process['response'] = i - active_process['arrival']
+            active_process['has_run'] = True
+            write_out(f"Time {i:>3} : {active_process['name']} selected (burst {active_process['burst']:>3})")
 
-        # If no active process, print idle
         if not active_process:
-            print(f"Time {i:3} : Idle")
+            write_out(f"Time {i:>3} : Idle")
             continue
 
         if current_q == 0:
             queue.append(active_process)
-            active_process = queue.popleft()
+            active_process = queue.pop(0)
             current_q = quantum
-            if not active_process["has_run"]:
-                active_process["response"] = i - active_process["arrival"]
-                active_process["has_run"] = True
-            print(f"Time {i:3} : {active_process['name']} selected (burst {active_process['burst']})")
+            if not active_process['has_run']:
+                active_process['response'] = i - active_process['arrival']
+            active_process['has_run'] = True
+            write_out(f"Time {i:>3} : {active_process['name']} selected (burst {active_process['burst']:>3})")
 
-    print("Finished at time", runfor)
+    write_out(f"Finished at time {runfor:>3}")
+
     return finished_processes
 
 def main():
+    global file_out
+
     if len(sys.argv) != 2:
         print("Usage: python scheduler.py <filename>")
         sys.exit(1)
@@ -336,60 +347,57 @@ def main():
     processes = []
 
     for line in lines:
-        if "#" in line:
-            line = line.split("#")[0].strip()
+        line = line.split('#')[0].strip()
         if not line:
             continue
         parts = line.split()
-        directive = parts[0].lower()
-        if directive == "end":
+        directive = parts[0]
+        if directive == 'end':
             break
-        if directive == "process":
-            process = {"name": parts[2], "arrival": int(parts[4]), "burst": int(parts[6]), "has_run": False,
-                       "wait": 0, "turnaround": 0, "response": 0}
-            processes.append(process)
+        if directive == 'process':
+            processes.append({
+                'name': parts[2],
+                'arrival': int(parts[4]),
+                'burst': int(parts[6]),
+                'wait': 0,
+                'turnaround': 0,
+                'response': 0,
+                'has_run': False
+            })
         else:
-            directives[directive] = parts[1]
+            directives[directive] = ' '.join(parts[1:])
 
-    required_directives = ["processcount", "runfor", "use"]
-    for directive in required_directives:
-        if directive not in directives:
-            print(f"Error: Missing parameter {directive}")
-            sys.exit(1)
+    if 'processcount' not in directives:
+        write_out("Error: Missing parameter processcount")
+        return
+    if len(processes) != int(directives['processcount']):
+        write_out("Error: Missing process directives")
+        return
+    if 'runfor' not in directives:
+        write_out("Error: Missing parameter runfor")
+        return
 
-    process_count = int(directives["processcount"])
-    if len(processes) != process_count:
-        print("Error: Number of 'process' directives doesn't match 'processcount'")
-        sys.exit(1)
+    processes.sort(key=lambda x: x['arrival'])
 
-    use_algorithm = directives["use"].lower()
-    if use_algorithm == "rr" and "quantum" not in directives:
-        print("Error: Missing quantum parameter when use is 'rr'")
-        sys.exit(1)
-
-    #print(f"{process_count} processes") 
-    #if you need this code line writr it into your function. 
-    #It prints to every functions console when it is already handeled in the functions  
-
-    for process in processes:
-        process["has_run"] = False
-
-    processes.sort(key=lambda x: x["arrival"])
-
-    if use_algorithm == "fcfs":
+    if directives['use'] == "fcfs":
         fcfs(processes, int(directives["runfor"]), filename)
-
-    elif use_algorithm == "sjf":
+    elif directives['use'] == "sjf":
         sjf(filename)
-    elif use_algorithm == "ljf":
+    elif directives['use'] == "ljf":
         ljf(filename)
-    elif use_algorithm == "rr":
-        quantum = int(directives["quantum"])
-        result_processes = round_robin(processes, int(directives["runfor"]), quantum)
-
-        result_processes.sort(key=lambda x: x["name"])
-        for process in result_processes:
-            print(f"{process['name']} wait {process['wait']} turnaround {process['turnaround']} response {process['response']}")
+    elif directives['use'] == "rr":
+        if 'quantum' not in directives:
+            write_out("Error: Missing quantum parameter when use is 'rr'")
+            return
+        finished_processes = round_robin(processes, int(directives['runfor']), int(directives['quantum']))
+        finished_processes.sort(key=lambda x: x['name'])
+        write_out("")
+        for process in finished_processes:
+            write_out(f"{process['name']} wait {process['wait']:>3} turnaround {process['turnaround']:>3} response {process['response']:>3}") # added alignment formatting
+        # the following was moved/inserted to be consistent with the other methods
+        with open(filename.replace('.in', '.out'), 'w') as f:
+            f.write(file_out)
+        print(f"Output written to {filename.replace('.in', '.out')}")
 
 if __name__ == "__main__":
     main()
