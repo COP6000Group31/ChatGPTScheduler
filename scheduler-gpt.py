@@ -277,9 +277,9 @@ def ljf(input_file_path):
     print(f"Output written to {output_file_path}")
 
 def round_robin(processes, runfor, quantum):
-    write_out(f"{len(processes)} processes")
+    write_out(f" {len(processes)} processes") # moved here and inserted space to be consistent with output
     write_out("Using Round-Robin")
-    write_out("Quantum " + str(quantum))
+    write_out(f"Quantum {quantum:>3}") # the formatting (:>3) has been added to this and all following write calls, to match the original formatting
     write_out("")  # Blank line
 
     active_process = None
@@ -298,12 +298,12 @@ def round_robin(processes, runfor, quantum):
         arrivals = [process for process in processes if process['arrival'] == i]
         for arrival in arrivals:
             queue.append(arrival)
-            write_out(f"Time {i} : {arrival['name']} arrived")
+            write_out(f"Time {i:>3} : {arrival['name']} arrived")
 
         if active_process and active_process['burst'] == 0:
             active_process['turnaround'] = i - active_process['arrival']
             finished_processes.append(active_process)
-            write_out(f"Time {i} : {active_process['name']} finished")
+            write_out(f"Time {i:>3} : {active_process['name']} finished")
             active_process = None
 
         if not active_process and queue:
@@ -312,10 +312,10 @@ def round_robin(processes, runfor, quantum):
             if not active_process['has_run']:
                 active_process['response'] = i - active_process['arrival']
             active_process['has_run'] = True
-            write_out(f"Time {i} : {active_process['name']} selected (burst {active_process['burst']})")
+            write_out(f"Time {i:>3} : {active_process['name']} selected (burst {active_process['burst']:>3})")
 
         if not active_process:
-            write_out(f"Time {i} : Idle")
+            write_out(f"Time {i:>3} : Idle")
             continue
 
         if current_q == 0:
@@ -325,9 +325,9 @@ def round_robin(processes, runfor, quantum):
             if not active_process['has_run']:
                 active_process['response'] = i - active_process['arrival']
             active_process['has_run'] = True
-            write_out(f"Time {i} : {active_process['name']} selected (burst {active_process['burst']})")
+            write_out(f"Time {i:>3} : {active_process['name']} selected (burst {active_process['burst']:>3})")
 
-    write_out(f"Finished at time {runfor}")
+    write_out(f"Finished at time {runfor:>3}")
 
     return finished_processes
 
@@ -393,7 +393,7 @@ def main():
         finished_processes.sort(key=lambda x: x['name'])
         write_out("")
         for process in finished_processes:
-            write_out(f"{process['name']} wait {process['wait']} turnaround {process['turnaround']} response {process['response']}")
+            write_out(f"{process['name']} wait {process['wait']:>3} turnaround {process['turnaround']:>3} response {process['response']:>3}") # added alignment formatting
         # the following was moved/inserted to be consistent with the other methods
         with open(filename.replace('.in', '.out'), 'w') as f:
             f.write(file_out)
